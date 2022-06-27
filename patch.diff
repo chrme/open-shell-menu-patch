@@ -1,0 +1,107 @@
+diff --git a/Src/StartMenu/StartMenuDLL/SearchManager.cpp b/Src/StartMenu/StartMenuDLL/SearchManager.cpp
+index b536d7e..ece8544 100644
+--- a/Src/StartMenu/StartMenuDLL/SearchManager.cpp
++++ b/Src/StartMenu/StartMenuDLL/SearchManager.cpp
+@@ -13,6 +13,7 @@
+ #include "ResourceHelper.h"
+ #include "LogManager.h"
+ #include "Translations.h"
++#include "Everything.h"
+ #include <propkey.h>
+ #include <searchapi.h>
+ #include <ntquery.h>
+@@ -1011,6 +1012,28 @@ void CSearchManager::SearchThread( void )
+ 					scope.categoryHash=CATEGORY_FILE;
+ 					scope.roots.push_back(L"FILE:");
+ 				}
++
++				Everything_SetSearchW(searchRequest.searchText);
++				Everything_SetMatchCase(FALSE);
++				Everything_SetMax(40);
++				Everything_QueryW(TRUE);
++
++				{
++					DWORD evrth;
++
++					for (evrth = 0; evrth < Everything_GetNumResults(); evrth++) {
++						wchar_t token[_MAX_PATH];
++						Everything_GetResultFullPathNameW(evrth, token, sizeof(token) / sizeof(TCHAR));
++						CComPtr<IShellItem2> pFolder;
++						if (SUCCEEDED(SHCreateItemFromParsingName(token, NULL, IID_IShellItem, (void**)&pFolder)))
++							AddSearchItem(pFolder, token, COLLECT_PROGRAMS|COLLECT_NOREFRESH, CATEGORY_PROGRAM, searchRequest);
++						if (searchRequest.requestId < m_LastProgramsRequestId)
++							continue;
++					}
++				}
++
++				Everything_Reset();
++
+ 			}
+ 
+ 			const wchar_t *columns=L"System.ItemUrl, System.ItemType, Path, System.ItemPathDisplay, System.ItemNameDisplay";
+diff --git a/Src/StartMenu/StartMenuDLL/StartMenuDLL.vcxproj b/Src/StartMenu/StartMenuDLL/StartMenuDLL.vcxproj
+index 5777b91..ad9ef9d 100644
+--- a/Src/StartMenu/StartMenuDLL/StartMenuDLL.vcxproj
++++ b/Src/StartMenu/StartMenuDLL/StartMenuDLL.vcxproj
+@@ -150,7 +150,7 @@
+       <AdditionalIncludeDirectories>$(IntDir);..\..\Lib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+     </ResourceCompile>
+     <Link>
+-      <AdditionalDependencies>comctl32.lib;uxtheme.lib;WtsApi32.lib;Secur32.lib;Msimg32.lib;Netapi32.lib;dwmapi.lib;PowrProf.lib;Oleacc.lib;winmm.lib;htmlhelp.lib;wininet.lib;structuredquery.lib;Propsys.lib;wintrust.lib;crypt32.lib;%(AdditionalDependencies)</AdditionalDependencies>
++      <AdditionalDependencies>comctl32.lib;uxtheme.lib;WtsApi32.lib;Secur32.lib;Msimg32.lib;Netapi32.lib;dwmapi.lib;PowrProf.lib;Oleacc.lib;winmm.lib;htmlhelp.lib;wininet.lib;structuredquery.lib;Propsys.lib;wintrust.lib;crypt32.lib;Everything32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+       <GenerateDebugInformation>true</GenerateDebugInformation>
+       <SubSystem>Windows</SubSystem>
+     </Link>
+@@ -174,7 +174,7 @@
+       <AdditionalIncludeDirectories>$(IntDir);..\..\Lib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+     </ResourceCompile>
+     <Link>
+-      <AdditionalDependencies>comctl32.lib;uxtheme.lib;WtsApi32.lib;Secur32.lib;Msimg32.lib;Netapi32.lib;dwmapi.lib;PowrProf.lib;Oleacc.lib;winmm.lib;htmlhelp.lib;wininet.lib;structuredquery.lib;Propsys.lib;wintrust.lib;crypt32.lib;%(AdditionalDependencies)</AdditionalDependencies>
++      <AdditionalDependencies>comctl32.lib;uxtheme.lib;WtsApi32.lib;Secur32.lib;Msimg32.lib;Netapi32.lib;dwmapi.lib;PowrProf.lib;Oleacc.lib;winmm.lib;htmlhelp.lib;wininet.lib;structuredquery.lib;Propsys.lib;wintrust.lib;crypt32.lib;Everything64.lib;%(AdditionalDependencies)</AdditionalDependencies>
+       <GenerateDebugInformation>true</GenerateDebugInformation>
+       <SubSystem>Windows</SubSystem>
+     </Link>
+@@ -198,7 +198,7 @@
+       <AdditionalIncludeDirectories>$(IntDir);..\..\Lib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+     </ResourceCompile>
+     <Link>
+-      <AdditionalDependencies>comctl32.lib;uxtheme.lib;WtsApi32.lib;Secur32.lib;Msimg32.lib;Netapi32.lib;dwmapi.lib;PowrProf.lib;Oleacc.lib;winmm.lib;htmlhelp.lib;wininet.lib;structuredquery.lib;Propsys.lib;wintrust.lib;crypt32.lib;%(AdditionalDependencies)</AdditionalDependencies>
++      <AdditionalDependencies>comctl32.lib;uxtheme.lib;WtsApi32.lib;Secur32.lib;Msimg32.lib;Netapi32.lib;dwmapi.lib;PowrProf.lib;Oleacc.lib;winmm.lib;htmlhelp.lib;wininet.lib;structuredquery.lib;Propsys.lib;wintrust.lib;crypt32.lib;Everything32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+       <GenerateDebugInformation>true</GenerateDebugInformation>
+       <SubSystem>Windows</SubSystem>
+       <OptimizeReferences>true</OptimizeReferences>
+@@ -224,7 +224,7 @@
+       <AdditionalIncludeDirectories>$(IntDir);..\..\Lib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+     </ResourceCompile>
+     <Link>
+-      <AdditionalDependencies>comctl32.lib;uxtheme.lib;WtsApi32.lib;Secur32.lib;Msimg32.lib;Netapi32.lib;dwmapi.lib;PowrProf.lib;Oleacc.lib;winmm.lib;htmlhelp.lib;wininet.lib;structuredquery.lib;Propsys.lib;wintrust.lib;crypt32.lib;%(AdditionalDependencies)</AdditionalDependencies>
++      <AdditionalDependencies>comctl32.lib;uxtheme.lib;WtsApi32.lib;Secur32.lib;Msimg32.lib;Netapi32.lib;dwmapi.lib;PowrProf.lib;Oleacc.lib;winmm.lib;htmlhelp.lib;wininet.lib;structuredquery.lib;Propsys.lib;wintrust.lib;crypt32.lib;Everything64.lib;%(AdditionalDependencies)</AdditionalDependencies>
+       <GenerateDebugInformation>true</GenerateDebugInformation>
+       <SubSystem>Windows</SubSystem>
+       <OptimizeReferences>true</OptimizeReferences>
+@@ -251,7 +251,7 @@
+       <AdditionalIncludeDirectories>$(IntDir);..\..\Lib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+     </ResourceCompile>
+     <Link>
+-      <AdditionalDependencies>comctl32.lib;uxtheme.lib;WtsApi32.lib;Secur32.lib;Msimg32.lib;Netapi32.lib;dwmapi.lib;PowrProf.lib;Oleacc.lib;winmm.lib;htmlhelp.lib;wininet.lib;structuredquery.lib;Propsys.lib;wintrust.lib;crypt32.lib;%(AdditionalDependencies)</AdditionalDependencies>
++      <AdditionalDependencies>comctl32.lib;uxtheme.lib;WtsApi32.lib;Secur32.lib;Msimg32.lib;Netapi32.lib;dwmapi.lib;PowrProf.lib;Oleacc.lib;winmm.lib;htmlhelp.lib;wininet.lib;structuredquery.lib;Propsys.lib;wintrust.lib;crypt32.lib;Everything32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+       <GenerateDebugInformation>true</GenerateDebugInformation>
+       <SubSystem>Windows</SubSystem>
+       <OptimizeReferences>true</OptimizeReferences>
+@@ -278,7 +278,7 @@
+       <AdditionalIncludeDirectories>$(IntDir);..\..\Lib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+     </ResourceCompile>
+     <Link>
+-      <AdditionalDependencies>comctl32.lib;uxtheme.lib;WtsApi32.lib;Secur32.lib;Msimg32.lib;Netapi32.lib;dwmapi.lib;PowrProf.lib;Oleacc.lib;winmm.lib;htmlhelp.lib;wininet.lib;structuredquery.lib;Propsys.lib;wintrust.lib;crypt32.lib;%(AdditionalDependencies)</AdditionalDependencies>
++      <AdditionalDependencies>comctl32.lib;uxtheme.lib;WtsApi32.lib;Secur32.lib;Msimg32.lib;Netapi32.lib;dwmapi.lib;PowrProf.lib;Oleacc.lib;winmm.lib;htmlhelp.lib;wininet.lib;structuredquery.lib;Propsys.lib;wintrust.lib;crypt32.lib;Everything64.lib;%(AdditionalDependencies)</AdditionalDependencies>
+       <GenerateDebugInformation>true</GenerateDebugInformation>
+       <SubSystem>Windows</SubSystem>
+       <OptimizeReferences>true</OptimizeReferences>
+@@ -328,6 +328,7 @@
+     <ClInclude Include="stdafx.h" />
+     <ClInclude Include="targetver.h" />
+     <ClInclude Include="TouchHelper.h" />
++    <ClInclude Include="Everything.h" />
+   </ItemGroup>
+   <ItemGroup>
+     <Image Include="..\..\Setup\OpenShell.ico" />
